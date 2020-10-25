@@ -1,0 +1,13 @@
+{
+ "name": "server",
+ "version": "1.0.0",
+ "main": "index.js",
+ "license": "MIT",
+ "dependencies": {
+  "@types/socket.io": "^2.1.11",
+  "socket.io": "^2.3.0"
+ },
+ "scripts": {
+  "dev": "tsc && node dist/index.js"
+ }
+}
