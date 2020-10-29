@@ -20,21 +20,28 @@ server.on('connection', socket => {
 		server.emit('peers', Array.from(peers));
 	});
 
-	socket.on('join', () => {
-		console.log("Join", socket.id);
-		socket.broadcast.emit('join', socket.id);
+	let code : string | null = null;
+
+	socket.on('join', (c) => {
+		code = c;
+		socket.join(code);
+		socket.to(code).broadcast.emit('join', socket.id);
 	});
+
+	socket.on('leave', () => {
+		if (code) socket.leave(code);
+	})
 
 	socket.on('offer', ({ offer, to }: Offer) => {
 		console.log("Offer", socket.id, "->", to);
-		socket.to(to).emit('offer', {
+		server.to(to).emit('offer', {
 			offer,
 			from: socket.id
 		});
 	});
 	socket.on('answer', ({ answer, to }: Answer) => {
 		console.log("Answer", socket.id, "->", to);
-		socket.to(to).emit('answer', {
+		server.to(to).emit('answer', {
 			answer,
 			from: socket.id
 		});
