@@ -2,51 +2,47 @@ import io from 'socket.io';
 
 const server = io();
 
-const peers = new Set();
+const playerIds = new Map<string, number>();
 
-interface Offer {
-	offer: RTCSessionDescriptionInit;
-	to: string;
-}
-interface Answer {
-	answer: RTCSessionDescriptionInit;
+interface Signal {
+	data: string;
 	to: string;
 }
 
-server.on('connection', socket => {
-	peers.add(socket.id);
-	socket.on('disconnect', () => {
-		peers.delete(socket.id);
-		server.emit('peers', Array.from(peers));
-	});
+server.on('connection', (socket: io.Socket) => {
 
-	let code : string | null = null;
+	let code: string | null = null;
 
-	socket.on('join', (c) => {
+	socket.on('join', (c: string, id: number) => {
 		code = c;
 		socket.join(code);
-		socket.to(code).broadcast.emit('join', socket.id);
+		socket.to(code).broadcast.emit('join', socket.id, id);
+
+		let socketsInLobby = Object.keys(server.sockets.adapter.rooms[code].sockets);
+		let ids: any = {};
+		for (let socket of socketsInLobby) {
+			ids[socket] = playerIds.get(socket);
+		}
+		socket.emit('setIds', ids);
 	});
+
+	socket.on('id', (id: number) => {
+		playerIds.set(socket.id, id);
+		socket.to(code).broadcast.emit('setId', socket.id, id);
+	})
+
 
 	socket.on('leave', () => {
 		if (code) socket.leave(code);
 	})
 
-	socket.on('offer', ({ offer, to }: Offer) => {
-		console.log("Offer", socket.id, "->", to);
-		server.to(to).emit('offer', {
-			offer,
+	socket.on('signal', ({ data, to }: Signal) => {
+		server.to(to).emit('signal', {
+			data,
 			from: socket.id
 		});
 	});
-	socket.on('answer', ({ answer, to }: Answer) => {
-		console.log("Answer", socket.id, "->", to);
-		server.to(to).emit('answer', {
-			answer,
-			from: socket.id
-		});
-	});
-	socket.emit('peers', Array.from(peers));
+
 })
 
 server.listen(5679);
