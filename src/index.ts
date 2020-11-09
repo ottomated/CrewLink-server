@@ -1,6 +1,11 @@
-import io from 'socket.io';
+import express from 'express';
+import { Server } from 'http';
+import socketIO from 'socket.io';
+import { createReadStream } from 'fs';
 
-const server = io();
+const app = express();
+const server = new Server(app);
+const io = socketIO(server);
 
 const playerIds = new Map<string, number>();
 
@@ -9,7 +14,11 @@ interface Signal {
 	to: string;
 }
 
-server.on('connection', (socket: io.Socket) => {
+app.get('/offsets.yml', (req, res) => {
+	createReadStream('./offsets.yml').pipe(res);
+});
+
+server.on('connection', (socket: socketIO.Socket) => {
 
 	let code: string | null = null;
 
@@ -18,7 +27,7 @@ server.on('connection', (socket: io.Socket) => {
 		socket.join(code);
 		socket.to(code).broadcast.emit('join', socket.id, id);
 
-		let socketsInLobby = Object.keys(server.sockets.adapter.rooms[code].sockets);
+		let socketsInLobby = Object.keys(io.sockets.adapter.rooms[code].sockets);
 		let ids: any = {};
 		for (let socket of socketsInLobby) {
 			ids[socket] = playerIds.get(socket);
@@ -37,7 +46,7 @@ server.on('connection', (socket: io.Socket) => {
 	})
 
 	socket.on('signal', ({ data, to }: Signal) => {
-		server.to(to).emit('signal', {
+		io.to(to).emit('signal', {
 			data,
 			from: socket.id
 		});
@@ -45,4 +54,4 @@ server.on('connection', (socket: io.Socket) => {
 
 })
 
-server.listen(5679);
+server.listen(9736);
