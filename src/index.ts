@@ -18,8 +18,7 @@ app.get('/offsets.yml', (req, res) => {
 	createReadStream('./offsets.yml').pipe(res);
 });
 
-server.on('connection', (socket: socketIO.Socket) => {
-
+io.on('connection', (socket: socketIO.Socket) => {
 	let code: string | null = null;
 
 	socket.on('join', (c: string, id: number) => {
