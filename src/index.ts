@@ -14,9 +14,7 @@ interface Signal {
 	to: string;
 }
 
-app.get('/offsets.yml', (req, res) => {
-	createReadStream('./offsets.yml').pipe(res);
-});
+app.use(express.static('offsets'))
 
 io.on('connection', (socket: socketIO.Socket) => {
 	let code: string | null = null;
