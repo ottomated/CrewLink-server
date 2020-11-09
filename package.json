@@ -11,5 +11,8 @@
  },
  "scripts": {
   "dev": "tsc && node dist/index.js"
+ },
+ "devDependencies": {
+  "typescript": "^4.0.5"
  }
 }
