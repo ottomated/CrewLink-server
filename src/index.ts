@@ -1,7 +1,13 @@
 import express from 'express';
 import { Server } from 'http';
 import socketIO from 'socket.io';
-import { createReadStream } from 'fs';
+import Tracer from 'tracer';
+
+const port = parseInt(process.env.PORT || '9736');
+
+const logger = Tracer.colorConsole({
+	format: "{{timestamp}} <{{title}}> {{message}}"
+});
 
 const app = express();
 const server = new Server(app);
@@ -16,10 +22,19 @@ interface Signal {
 
 app.use(express.static('offsets'))
 
+let connectionCount = 0;
+
 io.on('connection', (socket: socketIO.Socket) => {
+	connectionCount++;
+	logger.info("Total connected: %d", connectionCount);
 	let code: string | null = null;
 
 	socket.on('join', (c: string, id: number) => {
+		if (typeof c !== 'string' || typeof id !== 'number') {
+			socket.disconnect();
+			logger.error(`Socket %s sent invalid join command: %s %d`, socket.id, c, id);
+			return;
+		}
 		code = c;
 		socket.join(code);
 		socket.to(code).broadcast.emit('join', socket.id, id);
@@ -33,6 +48,11 @@ io.on('connection', (socket: socketIO.Socket) => {
 	});
 
 	socket.on('id', (id: number) => {
+		if (typeof id !== 'number') {
+			socket.disconnect();
+			logger.error(`Socket %s sent invalid id command: %d`, socket.id, id);
+			return;
+		}
 		playerIds.set(socket.id, id);
 		socket.to(code).broadcast.emit('setId', socket.id, id);
 	})
@@ -42,13 +62,25 @@ io.on('connection', (socket: socketIO.Socket) => {
 		if (code) socket.leave(code);
 	})
 
-	socket.on('signal', ({ data, to }: Signal) => {
+	socket.on('signal', (signal: Signal) => {
+		if (typeof signal !== 'object' || !signal.data || !signal.to || typeof signal.data !== 'string' || typeof signal.to !== 'string') {
+			socket.disconnect();
+			logger.error(`Socket %s sent invalid signal command: %j`, socket.id, signal);
+			return;
+		}
+		const { to, data } = signal;
 		io.to(to).emit('signal', {
 			data,
 			from: socket.id
 		});
 	});
 
+	socket.on('disconnect', () => {
+		connectionCount--;
+		logger.info("Total connected: %d", connectionCount);
+	})
+
 })
 
-server.listen(9736);
+server.listen(port);
+logger.info('Server listening on port %d', port);
