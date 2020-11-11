@@ -1,4 +1,4 @@
-[![GPL-3.0 License][license-shield]][license-url]
+[![GPL-3.0 License][license-shield]][license-url] [![Docker Pulls][docker-shield]][docker-url]
 
 <br />
 <p align="center">
@@ -116,3 +116,5 @@ Distributed under the GNU General Public License v3.0. See `LICENSE` for more in
 
 [license-shield]: https://img.shields.io/github/license/ottomated/crewlink.svg?style=flat-square
 [license-url]: https://github.com/ottomated/crewlink-server/blob/master/LICENSE
+[docker-shield]: https://img.shields.io/docker/pulls/ottomated/crewlink-server
+[docker-url]: https://hub.docker.com/repository/docker/ottomated/crewlink-server
