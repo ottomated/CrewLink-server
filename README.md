@@ -36,8 +36,36 @@
 
 This is the relay server for CrewLink, an Among Us proximity voice chat program. I am currently hosting a server at `ottomated.net:9736`, but if you want a more reliable option I would suggest to deploy this repository yourself.
 
+## Docker Quickstart
 
-## Getting Started
+Run the server with [Docker](https://docs.docker.com/get-docker/) by running the following command:
+
+```
+docker run -d -p 9736:9736 ottomated/crewlink-server:latest
+```
+
+To change the external port the server uses, change the *first* instance of the port. For example, to use port 8123:
+
+```
+docker run -d -p 8123:9736 ottomated/crewlink-server:latest
+```
+
+## Building the Docker Image
+
+To build your own Docker image, do the following:
+
+1. Clone the repo
+```sh
+git clone https://github.com/ottomated/crewlink-server.git
+cd crewlink-server
+```
+
+2. Run the Docker build command:
+```sh
+docker build -t ottomated/crewlink-server:build .
+```
+
+## Manual Installation
 
 ### Prerequisites
 
