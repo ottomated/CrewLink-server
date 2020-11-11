@@ -2,6 +2,7 @@ import express from 'express';
 import { Server } from 'http';
 import socketIO from 'socket.io';
 import Tracer from 'tracer';
+import morgan from 'morgan';
 
 const port = parseInt(process.env.PORT || '9736');
 
@@ -20,6 +21,7 @@ interface Signal {
 	to: string;
 }
 
+app.use(morgan('combined'))
 app.use(express.static('offsets'))
 
 let connectionCount = 0;
