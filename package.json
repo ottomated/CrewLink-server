@@ -9,7 +9,8 @@
   "tracer": "^1.1.4"
  },
  "scripts": {
-  "start": "tsc && node dist/index.js"
+  "start": "yarn compile && node dist/index.js",
+  "compile": "tsc"
  },
  "devDependencies": {
   "@types/express": "^4.17.8",
