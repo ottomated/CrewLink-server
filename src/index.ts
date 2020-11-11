@@ -63,7 +63,7 @@ io.on('connection', (socket: socketIO.Socket) => {
 	})
 
 	socket.on('signal', (signal: Signal) => {
-		if (typeof signal !== 'object' || !signal.data || !signal.to || typeof signal.data !== 'string' || typeof signal.to !== 'string') {
+		if (typeof signal !== 'object' || !signal.data || !signal.to || typeof signal.data === 'undefined' || typeof signal.to !== 'string') {
 			socket.disconnect();
 			logger.error(`Socket %s sent invalid signal command: %j`, socket.id, signal);
 			return;
