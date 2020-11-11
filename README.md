@@ -23,6 +23,8 @@
 ## Table of Contents
 
 * [About the Project](#about-the-project)
+* [Docker Quickstart](#docker-quickstart)
+  * [Building the Docker Image](#building-the-docker-image)
 * [Getting Started](#getting-started)
   * [Prerequisites](#prerequisites)
   * [Installation](#installation)
@@ -50,7 +52,7 @@ To change the external port the server uses, change the *first* instance of the 
 docker run -d -p 8123:9736 ottomated/crewlink-server:latest
 ```
 
-## Building the Docker Image
+### Building the Docker Image
 
 To build your own Docker image, do the following:
 
