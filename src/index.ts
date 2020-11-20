@@ -43,8 +43,9 @@ io.on('connection', (socket: socketIO.Socket) => {
 
 		let socketsInLobby = Object.keys(io.sockets.adapter.rooms[code].sockets);
 		let ids: any = {};
-		for (let socket of socketsInLobby) {
-			ids[socket] = playerIds.get(socket);
+		for (let s of socketsInLobby) {
+			if (s !== socket.id)
+				ids[s] = playerIds.get(s);
 		}
 		socket.emit('setIds', ids);
 	});
