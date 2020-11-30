@@ -1,4 +1,4 @@
-[![GPL-3.0 License][license-shield]][license-url] [![Docker Pulls][docker-shield]][docker-url]
+[![GPL-3.0 License][license-shield]][license-url] [![Docker Pulls][docker-shield]][docker-url] 
 
 <br />
 <p align="center">
@@ -37,6 +37,14 @@
 ## About The Project
 
 This is the relay server for CrewLink, an Among Us proximity voice chat program. I am currently hosting a server at `ottomated.net:9736`, but if you want a more reliable option I would suggest to deploy this repository yourself.
+
+## Deploy to Heroku
+
+To get up and running quickly, you can deploy to Heroku using the button below
+
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
+
+This will deploy an instance of the crewlink-server. You can get the URL of your server by using the app name that you gave when you launched the app on heroku and appending `.herokuapp.com`. You can also find the URL of your server by going to "Settings", scrolling down to "Domains", and removing the `https://` and trailing slash from the url. Using this URL, follow step 4 of the [installation instructions](https://github.com/ottomated/CrewLink-server#manual-installation) to connect your client to your server instance.
 
 ## Docker Quickstart
 
