@@ -36,7 +36,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-This is the relay server for CrewLink, an Among Us proximity voice chat program. I am currently hosting a server at `ottomated.net:9736`, but if you want a more reliable option I would suggest to deploy this repository yourself.
+This is the relay server for CrewLink, an Among Us proximity voice chat program. I am currently hosting a server at `http://54.193.94.35:9736/`, but if you want a more reliable option I would suggest to deploy this repository yourself.
 
 ## Deploy to Heroku
 
@@ -102,8 +102,6 @@ yarn install
 yarn start
 ```
 4. Copy your server's IP and port into CrewLink settings. Make sure everyone in your lobby is using the same server.
-
-<img src="settings.png" alt="Voice Server settings">
 
 <!-- CONTRIBUTING -->
 ## Contributing
