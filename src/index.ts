@@ -3,7 +3,7 @@ import { Server } from 'http';
 import socketIO from 'socket.io';
 import Tracer from 'tracer';
 import morgan from 'morgan';
-import { setRoomConfig, getRoomConfig, RoomConfig, validateRoomConfig, deleteRoomConfig } from './config';
+import { setRoomConfig, getRoomConfig, RoomConfig, validateRoomConfig, deleteRoomConfig, createRoomConfig } from './config';
 
 const port = parseInt(process.env.PORT || '9736');
 
@@ -50,6 +50,7 @@ io.on('connection', (socket: socketIO.Socket) => {
 				ids[s] = playerIds.get(s);
 		}
 		socket.emit('setIds', ids);
+		createRoomConfig(code);
 		socket.emit('setConfig', getRoomConfig(code));
 	});
 
