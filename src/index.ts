@@ -111,6 +111,9 @@ io.on('connection', (socket: socketIO.Socket) => {
 	});
 
 	socket.on('disconnect', () => {
+		playerIds.delete(socket.id);
+		if (roomHostIds.get(code) === socket.id)
+			roomHostIds.delete(code);
 		connectionCount--;
 		logger.info("Total connected: %d", connectionCount);
 	})
