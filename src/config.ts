@@ -4,6 +4,10 @@ export class RoomConfig {
     maxDistance: number;
 }
 
+export function deleteRoomConfig(code: string) {
+    roomConfigs.delete(code);
+}
+
 export function setRoomConfig(code: string, config: RoomConfig) {
     roomConfigs.set(code, config);
 }

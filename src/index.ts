@@ -3,7 +3,7 @@ import { Server } from 'http';
 import socketIO from 'socket.io';
 import Tracer from 'tracer';
 import morgan from 'morgan';
-import { setRoomConfig, getRoomConfig, RoomConfig, validateRoomConfig } from './config';
+import { setRoomConfig, getRoomConfig, RoomConfig, validateRoomConfig, deleteRoomConfig } from './config';
 
 const port = parseInt(process.env.PORT || '9736');
 
@@ -114,6 +114,8 @@ io.on('connection', (socket: socketIO.Socket) => {
 		playerIds.delete(socket.id);
 		if (roomHostIds.get(code) === socket.id)
 			roomHostIds.delete(code);
+		if (io.sockets.adapter.rooms[code].length === 0)
+			deleteRoomConfig(code);
 		connectionCount--;
 		logger.info("Total connected: %d", connectionCount);
 	})
