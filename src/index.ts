@@ -3,6 +3,7 @@ import { Server } from 'http';
 import socketIO from 'socket.io';
 import Tracer from 'tracer';
 import morgan from 'morgan';
+import { setRoomConfig, getRoomConfig, RoomConfig, validateRoomConfig } from './config';
 
 const port = parseInt(process.env.PORT || '9736');
 
@@ -15,6 +16,7 @@ const server = new Server(app);
 const io = socketIO(server);
 
 const playerIds = new Map<string, number>();
+const roomHostIds = new Map<string, string>();
 
 interface Signal {
 	data: string;
@@ -48,6 +50,7 @@ io.on('connection', (socket: socketIO.Socket) => {
 				ids[s] = playerIds.get(s);
 		}
 		socket.emit('setIds', ids);
+		socket.emit('setConfig', getRoomConfig(code));
 	});
 
 	socket.on('id', (id: number) => {
@@ -76,6 +79,35 @@ io.on('connection', (socket: socketIO.Socket) => {
 			data,
 			from: socket.id
 		});
+	});
+
+	socket.on('host', () => {
+		if (!code) {
+			socket.disconnect();
+			logger.error(`Socket %s sent invalid config command, not in any room`, socket.id);
+			return;
+		}
+		roomHostIds.set(code, socket.id);
+	})
+
+	socket.on('config', (config: RoomConfig) => {
+		if (validateRoomConfig(config)) {
+			socket.disconnect();
+			logger.error(`Socket %s sent invalid config command: $j`, socket.id, config);
+			return;
+		}
+		if (!code) {
+			socket.disconnect();
+			logger.error(`Socket %s sent invalid config command, not in any room`, socket.id);
+			return;
+		}
+		if (roomHostIds.get(code) !== socket.id) {
+			socket.disconnect();
+			logger.error(`Socket %s sent invalid config command, is not the room host`, socket.id);
+			return;
+		}
+		setRoomConfig(code, config);
+		socket.to(code).broadcast.emit('setConfig', getRoomConfig(code));
 	});
 
 	socket.on('disconnect', () => {
