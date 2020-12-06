@@ -4,6 +4,7 @@ import socketIO from 'socket.io';
 import Tracer from 'tracer';
 import morgan from 'morgan';
 import { setRoomConfig, getRoomConfig, RoomConfig, validateRoomConfig, deleteRoomConfig, createRoomConfig } from './config';
+import publicIp from 'public-ip';
 
 const port = parseInt(process.env.PORT || '9736');
 
@@ -23,10 +24,16 @@ interface Signal {
 	to: string;
 }
 
+app.set('view engine', 'pug')
 app.use(morgan('combined'))
 app.use(express.static('offsets'))
-
 let connectionCount = 0;
+let address = 'loading...';
+
+app.get('/', (req, res) => {
+	res.render('index', { connectionCount, address });
+})
+
 
 io.on('connection', (socket: socketIO.Socket) => {
 	connectionCount++;
@@ -124,4 +131,7 @@ io.on('connection', (socket: socketIO.Socket) => {
 })
 
 server.listen(port);
-logger.info('Server listening on port %d', port);
+(async () => {
+	address = `http://${await publicIp.v4()}:${port}`;
+	logger.info('CrewLink Server started: %s', address);
+})();
