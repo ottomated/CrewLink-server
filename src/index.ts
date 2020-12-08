@@ -92,14 +92,14 @@ io.on('connection', (socket: socketIO.Socket) => {
 	socket.on('host', () => {
 		if (!code) {
 			socket.disconnect();
-			logger.error(`Socket %s sent invalid config command, not in any room`, socket.id);
+			logger.error(`Socket %s sent invalid host command, not in any room`, socket.id);
 			return;
 		}
 		roomHostIds.set(code, socket.id);
-	})
+	});
 
 	socket.on('config', (config: RoomConfig) => {
-		if (validateRoomConfig(config)) {
+		if (!validateRoomConfig(config)) {
 			socket.disconnect();
 			logger.error(`Socket %s sent invalid config command: $j`, socket.id, config);
 			return;
@@ -115,14 +115,14 @@ io.on('connection', (socket: socketIO.Socket) => {
 			return;
 		}
 		setRoomConfig(code, config);
-		socket.to(code).broadcast.emit('setConfig', getRoomConfig(code));
+		io.sockets.in(code).emit('setConfig', getRoomConfig(code));
 	});
 
 	socket.on('disconnect', () => {
 		playerIds.delete(socket.id);
 		if (roomHostIds.get(code) === socket.id)
 			roomHostIds.delete(code);
-		if (io.sockets.adapter.rooms[code].length === 0)
+		if (!io.sockets.adapter.rooms[code] || io.sockets.adapter.rooms[code].length === 0)
 			deleteRoomConfig(code);
 		connectionCount--;
 		logger.info("Total connected: %d", connectionCount);
