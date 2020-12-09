@@ -3,7 +3,6 @@ import { Server } from 'http';
 import socketIO from 'socket.io';
 import Tracer from 'tracer';
 import morgan from 'morgan';
-import { LobbySettings, validateLobbySettings } from './settings';
 import publicIp from 'public-ip';
 
 const port = parseInt(process.env.PORT || '9736');
@@ -18,7 +17,7 @@ const io = socketIO(server);
 
 const playerIds = new Map<string, number>();
 const roomHostIds = new Map<string, string>();
-const lobbySettings = new Map<string, LobbySettings>();
+const lobbySettings = new Map<string, { [key: string]: any }>();
 
 interface Signal {
 	data: string;
@@ -58,9 +57,8 @@ io.on('connection', (socket: socketIO.Socket) => {
 				ids[s] = playerIds.get(s);
 		}
 		socket.emit('setIds', ids);
-		if (!lobbySettings.has(code))
-			lobbySettings.set(code, new LobbySettings());
-		socket.emit('setSettings', lobbySettings.get(code));
+		if (lobbySettings.has(code))
+			socket.emit('setSettings', lobbySettings.get(code));
 	});
 
 	socket.on('id', (id: number) => {
@@ -107,8 +105,8 @@ io.on('connection', (socket: socketIO.Socket) => {
 		roomHostIds.set(code, socket.id);
 	});
 
-	socket.on('config', (settings: LobbySettings) => {
-		if (!validateLobbySettings(settings)) {
+	socket.on('config', (settings: { [key: string]: any }) => {
+		if (typeof settings !== 'object') {
 			socket.disconnect();
 			logger.error(`Socket %s sent invalid config command: $j`, socket.id, settings);
 			return;
