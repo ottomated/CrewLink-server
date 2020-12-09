@@ -3,7 +3,7 @@ import { Server } from 'http';
 import socketIO from 'socket.io';
 import Tracer from 'tracer';
 import morgan from 'morgan';
-import { setRoomConfig, getRoomConfig, RoomConfig, validateRoomConfig, deleteRoomConfig, createRoomConfig } from './config';
+import { LobbySettings, validateLobbySettings } from './settings';
 import publicIp from 'public-ip';
 
 const port = parseInt(process.env.PORT || '9736');
@@ -18,6 +18,7 @@ const io = socketIO(server);
 
 const playerIds = new Map<string, number>();
 const roomHostIds = new Map<string, string>();
+const lobbySettings = new Map<string, LobbySettings>();
 
 interface Signal {
 	data: string;
@@ -57,8 +58,9 @@ io.on('connection', (socket: socketIO.Socket) => {
 				ids[s] = playerIds.get(s);
 		}
 		socket.emit('setIds', ids);
-		createRoomConfig(code);
-		socket.emit('setConfig', getRoomConfig(code));
+		if (!lobbySettings.has(code))
+			lobbySettings.set(code, new LobbySettings());
+		socket.emit('setSettings', lobbySettings.get(code));
 	});
 
 	socket.on('id', (id: number) => {
@@ -73,7 +75,14 @@ io.on('connection', (socket: socketIO.Socket) => {
 
 
 	socket.on('leave', () => {
-		if (code) socket.leave(code);
+		if (code) {
+			socket.leave(code);
+			playerIds.delete(socket.id);
+			if (roomHostIds.get(code) === socket.id)
+				roomHostIds.delete(code);
+			if (!io.sockets.adapter.rooms[code] || io.sockets.adapter.rooms[code].length === 0)
+				lobbySettings.delete(code);
+		}
 	})
 
 	socket.on('signal', (signal: Signal) => {
@@ -98,10 +107,10 @@ io.on('connection', (socket: socketIO.Socket) => {
 		roomHostIds.set(code, socket.id);
 	});
 
-	socket.on('config', (config: RoomConfig) => {
-		if (!validateRoomConfig(config)) {
+	socket.on('config', (settings: LobbySettings) => {
+		if (!validateLobbySettings(settings)) {
 			socket.disconnect();
-			logger.error(`Socket %s sent invalid config command: $j`, socket.id, config);
+			logger.error(`Socket %s sent invalid config command: $j`, socket.id, settings);
 			return;
 		}
 		if (!code) {
@@ -114,8 +123,8 @@ io.on('connection', (socket: socketIO.Socket) => {
 			logger.error(`Socket %s sent invalid config command, is not the room host`, socket.id);
 			return;
 		}
-		setRoomConfig(code, config);
-		io.sockets.in(code).emit('setConfig', getRoomConfig(code));
+		lobbySettings.set(code, settings);
+		io.sockets.in(code).emit('setSettings', lobbySettings.get(code));
 	});
 
 	socket.on('disconnect', () => {
@@ -123,7 +132,7 @@ io.on('connection', (socket: socketIO.Socket) => {
 		if (roomHostIds.get(code) === socket.id)
 			roomHostIds.delete(code);
 		if (!io.sockets.adapter.rooms[code] || io.sockets.adapter.rooms[code].length === 0)
-			deleteRoomConfig(code);
+			lobbySettings.delete(code);
 		connectionCount--;
 		logger.info("Total connected: %d", connectionCount);
 	})
