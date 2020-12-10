@@ -1,18 +1,33 @@
 import express from 'express';
 import { Server } from 'http';
+import { Server as HttpsServer } from 'https';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 import socketIO from 'socket.io';
 import Tracer from 'tracer';
 import morgan from 'morgan';
 import publicIp from 'public-ip';
 
-const port = parseInt(process.env.PORT || '9736');
+const httpsEnabled = !!process.env.HTTPS;
+
+const port = parseInt(process.env.PORT || (httpsEnabled ? '443' : '9736'));
+
+const sslCertificatePath = process.env.SSLPATH || process.cwd();
 
 const logger = Tracer.colorConsole({
 	format: "{{timestamp}} <{{title}}> {{message}}"
 });
 
 const app = express();
-const server = new Server(app);
+let server: HttpsServer | Server;
+if (httpsEnabled) {
+	server = new HttpsServer({
+		key: readFileSync(join(sslCertificatePath, 'privkey.pem')),
+		cert: readFileSync(join(sslCertificatePath, 'fullchain.pem'))
+	}, app);
+} else {
+	server = new Server(app);
+}
 const io = socketIO(server);
 
 const playerIds = new Map<string, number>();
@@ -26,10 +41,19 @@ app.set('view engine', 'pug')
 app.use(morgan('combined'))
 app.use(express.static('offsets'))
 let connectionCount = 0;
-let address = 'loading...';
+let address = process.env.ADDRESS;
 
-app.get('/', (req, res) => {
+app.get('/', (_, res) => {
 	res.render('index', { connectionCount, address });
+});
+
+app.get('/health', (req, res) => {
+	res.json({
+		uptime: process.uptime(),
+		connectionCount,
+		address,
+		name: process.env.NAME
+	});
 })
 
 
@@ -94,6 +118,7 @@ io.on('connection', (socket: socketIO.Socket) => {
 
 server.listen(port);
 (async () => {
-	address = `http://${await publicIp.v4()}:${port}`;
+	if (!address)
+		address = `http://${await publicIp.v4()}:${port}`;
 	logger.info('CrewLink Server started: %s', address);
 })();
