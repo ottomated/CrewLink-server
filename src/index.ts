@@ -1,7 +1,7 @@
 import express from 'express';
 import { Server } from 'http';
 import { Server as HttpsServer } from 'https';
-import { readFileSync } from 'fs';
+import { readFileSync, readdirSync } from 'fs';
 import { join } from 'path';
 import socketIO from 'socket.io';
 import Tracer from 'tracer';
@@ -13,6 +13,7 @@ const httpsEnabled = !!process.env.HTTPS;
 const port = parseInt(process.env.PORT || (httpsEnabled ? '443' : '9736'));
 
 const sslCertificatePath = process.env.SSLPATH || process.cwd();
+const supportedVersions = readdirSync(join(process.cwd(), 'offsets')).map(file => file.replace('.yml', ''));
 
 const logger = Tracer.colorConsole({
 	format: "{{timestamp}} <{{title}}> {{message}}"
@@ -52,7 +53,8 @@ app.get('/health', (req, res) => {
 		uptime: process.uptime(),
 		connectionCount,
 		address,
-		name: process.env.NAME
+		name: process.env.NAME,
+		supportedVersions
 	});
 })
 
