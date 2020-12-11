@@ -113,6 +113,7 @@ io.on('connection', (socket: socketIO.Socket) => {
 
 	socket.on('disconnect', () => {
 		connectionCount--;
+		playerIds.delete(socket.id);
 		logger.info("Total connected: %d", connectionCount);
 	})
 
