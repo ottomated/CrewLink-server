@@ -12,7 +12,6 @@ const httpsEnabled = !!process.env.HTTPS;
 const port = process.env.PORT || (httpsEnabled ? '443' : '9736');
 
 const sslCertificatePath = process.env.SSLPATH || process.cwd();
-const supportedVersions = readdirSync(join(process.cwd(), 'offsets')).map(file => file.replace('.yml', ''));
 
 const logger = Tracer.colorConsole({
 	format: "{{timestamp}} <{{title}}> {{message}}"
@@ -44,7 +43,7 @@ interface Signal {
 
 app.set('view engine', 'pug')
 app.use(morgan('combined'))
-app.use(express.static('offsets'))
+
 let connectionCount = 0;
 let address = process.env.ADDRESS;
 if (!address) {
@@ -61,8 +60,7 @@ app.get('/health', (req, res) => {
 		uptime: process.uptime(),
 		connectionCount,
 		address,
-		name: process.env.NAME,
-		supportedVersions
+		name: process.env.NAME
 	});
 })
 
