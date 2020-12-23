@@ -42,6 +42,7 @@ This is the relay server for CrewLink, an Among Us proximity voice chat program.
 
 Optional environment variables:
 
+ - `PORT`: Specifies the port that the server runs on. Defaults to `443` if `HTTPS` is enabled, and `9736` if not.
  - `ADDRESS`: Specifies the server domain
  - `NAME`: Specifies the server name
  - `HTTPS`: Enables https. You must place `privkey.pem` and `fullchain.pem` in your CWD.
