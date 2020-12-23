@@ -6,11 +6,10 @@ import { join } from 'path';
 import socketIO from 'socket.io';
 import Tracer from 'tracer';
 import morgan from 'morgan';
-import publicIp from 'public-ip';
 
 const httpsEnabled = !!process.env.HTTPS;
 
-const port = parseInt(process.env.PORT || (httpsEnabled ? '443' : '9736'));
+const port = process.env.PORT || (httpsEnabled ? '443' : '9736');
 
 const sslCertificatePath = process.env.SSLPATH || process.cwd();
 const supportedVersions = readdirSync(join(process.cwd(), 'offsets')).map(file => file.replace('.yml', ''));
@@ -48,6 +47,10 @@ app.use(morgan('combined'))
 app.use(express.static('offsets'))
 let connectionCount = 0;
 let address = process.env.ADDRESS;
+if (!address) {
+	logger.error('You must set the ADDRESS environment variable.');
+	process.exit(1);
+}
 
 app.get('/', (_, res) => {
 	res.render('index', { connectionCount, address });
@@ -149,7 +152,5 @@ io.on('connection', (socket: socketIO.Socket) => {
 
 server.listen(port);
 (async () => {
-	if (!address)
-		address = `http://${await publicIp.v4()}:${port}`;
 	logger.info('CrewLink Server started: %s', address);
 })();
