@@ -93,7 +93,7 @@ io.on('connection', (socket: socketIO.Socket) => {
 		code = c;
 		socket.join(code);
 		socket.to(code).broadcast.emit('join', socket.id, {
-			id: id,
+			playerId: id,
 			clientId: clientId === Math.pow(2, 32) - 1 ? null : clientId
 		});
 		socket.emit('setClients', otherClients);
