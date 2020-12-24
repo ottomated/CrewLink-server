@@ -81,7 +81,7 @@ io.on('connection', (socket: socketIO.Socket) => {
 		if (io.sockets.adapter.rooms[c]) {
 			let socketsInLobby = Object.keys(io.sockets.adapter.rooms[c].sockets);
 			for (let s of socketsInLobby) {
-				if (clients.get(s).clientId === clientId) {
+				if (clients.has(s) && clients.get(s).clientId === clientId) {
 					socket.disconnect();
 					logger.error(`Socket %s sent invalid join command, attempted spoofing another client`);
 					return;
