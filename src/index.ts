@@ -7,6 +7,7 @@ import socketIO from 'socket.io';
 import Tracer from 'tracer';
 import morgan from 'morgan';
 
+const supportedCrewLinkVersions = new Set(['1.2.0']);
 const httpsEnabled = !!process.env.HTTPS;
 
 const port = process.env.PORT || (httpsEnabled ? '443' : '9736');
@@ -64,6 +65,23 @@ app.get('/health', (req, res) => {
 	});
 })
 
+io.use((socket, next) => {
+	const userAgent = socket.request.headers['user-agent'];
+	const matches = /^CrewLink\/(\d+\.\d+\.\d+) \((\w+)\)$/.exec(userAgent);
+	const error = new Error() as any;
+	error.data = { message: 'The voice server does not support your version of CrewLink.\nSupported versions: ' + Array.from(supportedCrewLinkVersions).join() };
+	if (!matches) {
+		next(error);
+	} else {
+		const version = matches[1];
+		// const platform = matches[2];
+		if (supportedCrewLinkVersions.has(version)) {
+			next();
+		} else {
+			next(error);
+		}
+	}
+});
 
 io.on('connection', (socket: socketIO.Socket) => {
 	connectionCount++;
